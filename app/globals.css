@@ -92,3 +92,11 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+.drop-above {
+  border-top: 2px solid #10b981;
+}
+
+.drop-below {
+  border-bottom: 2px solid #10b981;
+}

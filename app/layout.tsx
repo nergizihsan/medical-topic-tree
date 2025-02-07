@@ -1,10 +1,10 @@
 import type { Metadata } from 'next'
 import './globals.css'
-import { Toaster } from "@/components/ui/toaster"
+import { Toaster } from "@/components/ui/sonner"
 
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
+  title: 'MSRA Topic Tree Editor',
+  description: 'Internal dashboard for editing the MSRA topic tree',
 }
 
 export default function RootLayout({
@@ -16,7 +16,11 @@ export default function RootLayout({
     <html lang="en">
       <body>
         {children}
-        <Toaster />
+        <Toaster 
+          position="top-center"
+          expand={false}
+          richColors
+        />
       </body>
     </html>
   )

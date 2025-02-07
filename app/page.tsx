@@ -1,7 +1,7 @@
 import { Suspense } from "react"
 import TopicTree from "@/components/TopicTree"
 import { MEDICAL_TOPICS } from "@/lib/constants"
-import { fetchTopicTree } from "@/app/actions/topics"
+import { fetchTopicTree } from "@/lib/topics"
 import type { TopicItem } from "@/types/topic"
 
 interface Props {
@@ -12,10 +12,19 @@ async function getInitialTopicData(topic: string) {
   try {
     const data = await fetchTopicTree(topic)
     return data.items.map((item: any) => ({
-      id: item.item_id,
+      id: item.item_id.toString(),
       item_name: item.item_name,
       item_level: item.item_level,
-      parent_element_id: item.parent_item_id,
+      parent_element_id: item.parent_item_id ? item.parent_item_id.toString() : null,
+      item_type: item.item_type,
+      link: item.link,
+      pdfLink: item.pdfLink,
+      order_index: item.order_index,
+      notes: item.notes,
+      relationships: item.relationships?.map((rel: any) => ({
+        targetId: rel.target_id ? rel.target_id.toString() : rel.targetId,
+        type: rel.relationship_type || rel.type
+      })) || []
     }))
   } catch (error) {
     console.error("Error fetching initial topic:", error)
