@@ -17,6 +17,7 @@ export interface TopicItem {
     targetId: string
     type: string
   }[]
+  hierarchy_analysis?: HierarchyAnalysis
 }
 
 export interface DragItem {
@@ -24,9 +25,23 @@ export interface DragItem {
   type: string
 }
 
-// Server-side interface (using ObjectId)
+// Server-side interface with Date
+interface ServerHierarchyAnalysis {
+  suggested_hierarchies: SuggestedHierarchy[]
+  missing_items: MissingItem[]
+  analyzed_at: Date
+}
+
+// Client-side interface with string date
+export interface HierarchyAnalysis {
+  suggested_hierarchies: SuggestedHierarchy[]
+  missing_items: MissingItem[]
+  analyzed_at: string  // Changed from Date to string for client-side
+}
+
+// Update TopicTree to use server-side version
 export interface TopicTree {
-  topic_name: string;
+  topic_name: string
   items: {
     item_id: ObjectId;  // Changed from number to ObjectId
     item_level: number;
@@ -39,7 +54,8 @@ export interface TopicTree {
       target_id: ObjectId
       relationship_type: string
     }[]
-  }[];
+  }[]
+  hierarchy_analysis?: ServerHierarchyAnalysis  // Use server version with Date
 }
 
 export interface TopicState {
@@ -58,5 +74,18 @@ export interface RelationshipData {
   sourceId: string
   targetId: string
   type: string
+}
+
+export interface SuggestedHierarchy {
+  child_items: string[]
+  is_new_group: boolean
+  parent_item: string
+  reasoning: string
+}
+
+export interface MissingItem {
+  importance: string
+  related_existing_items: string[]
+  suggested_item: string
 }
 

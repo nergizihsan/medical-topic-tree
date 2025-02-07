@@ -761,3 +761,30 @@ export async function moveItemUpLevel(
     }
   }
 }
+
+// Add this new function
+export async function fetchTopicAnalysis(topicName: string) {
+  try {
+    const db = await getDb()
+    const topic = await db
+      .collection<TopicTree>("topic_trees")
+      .findOne(
+        { topic_name: topicName },
+        { projection: { hierarchy_analysis: 1 } }
+      )
+
+    if (!topic?.hierarchy_analysis) {
+      throw new Error("Analysis not found")
+    }
+
+    return {
+      ...topic.hierarchy_analysis,
+      analyzed_at: topic.hierarchy_analysis.analyzed_at instanceof Date 
+        ? topic.hierarchy_analysis.analyzed_at.toISOString()
+        : topic.hierarchy_analysis.analyzed_at
+    }
+  } catch (error) {
+    console.error('Database error:', error)
+    throw error
+  }
+}

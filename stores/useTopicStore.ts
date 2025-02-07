@@ -1,5 +1,5 @@
 import { create } from "zustand"
-import type { TopicItem, ActionResponse } from "@/types/topic"
+import type { TopicItem, ActionResponse, HierarchyAnalysis } from "@/types/topic"
 import type { MedicalTopic } from "@/lib/constants"
 import { 
   fetchTopicTree, 
@@ -10,6 +10,7 @@ import {
   createTopicRelationship,
   deleteTopicRelationship,
   moveItemUpLevel,
+  fetchTopicAnalysis,
 } from "@/lib/topics"
 
 
@@ -22,6 +23,9 @@ interface TopicState {
   isEditing: string | null
   tempEditValue: string | null
   lastScrollPosition: number
+  analysisData: HierarchyAnalysis | null
+  isAnalysisLoading: boolean
+  isAnalysisPanelOpen: boolean
   setSelectedTopic: (topic: MedicalTopic | "") => void
   setItems: (items: TopicItem[]) => void
   fetchTopic: () => Promise<void>
@@ -40,6 +44,9 @@ interface TopicState {
   moveItemUp: (itemId: string) => Promise<ActionResponse>
   setLastScrollPosition: (position: number) => void
   updateItemNotes: (id: string, notes: string) => Promise<void>
+  fetchAnalysis: () => Promise<void>
+  toggleAnalysisPanel: () => void
+  isItemInTree: (itemName: string) => boolean
 }
 
 export const useTopicStore = create<TopicState>((set, get) => ({
@@ -51,6 +58,9 @@ export const useTopicStore = create<TopicState>((set, get) => ({
   isEditing: null,
   tempEditValue: null,
   lastScrollPosition: 0,
+  analysisData: null,
+  isAnalysisLoading: false,
+  isAnalysisPanelOpen: false,
 
   setSelectedTopic: (topic) => set({ selectedTopic: topic }),
   setItems: (items) => set({ items }),
@@ -557,6 +567,42 @@ export const useTopicStore = create<TopicState>((set, get) => ({
     } finally {
       set({ isSaving: false })
     }
+  },
+
+  fetchAnalysis: async () => {
+    const { selectedTopic, isAnalysisPanelOpen } = get()
+    
+    if (isAnalysisPanelOpen) {
+      set({ isAnalysisPanelOpen: false })
+      return
+    }
+    
+    if (!selectedTopic) return
+    
+    set({ isAnalysisLoading: true })
+    try {
+      const analysis = await fetchTopicAnalysis(selectedTopic)
+      set({ 
+        analysisData: analysis,
+        isAnalysisPanelOpen: true 
+      })
+    } catch (error) {
+      console.error("Error loading analysis:", error)
+      throw error
+    } finally {
+      set({ isAnalysisLoading: false })
+    }
+  },
+
+  toggleAnalysisPanel: () => {
+    set(state => ({ isAnalysisPanelOpen: !state.isAnalysisPanelOpen }))
+  },
+
+  isItemInTree: (itemName: string) => {
+    const { items } = get()
+    return items.some(item => 
+      item.item_name.toLowerCase() === itemName.toLowerCase()
+    )
   },
 
 })) 
